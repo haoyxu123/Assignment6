@@ -28,12 +28,12 @@ func loadCSV(filename string) ([][]float64, error) {
 
 	var data [][]float64
 	for i, record := range rawCSVData {
-		if i == 0 { // Skip header row
+		if i == 0 {
 			continue
 		}
 		var floatRecord []float64
 		for j, value := range record {
-			if j == 0 { // Assuming 'Nahant' is in the first column, skip it
+			if j == 0 {
 				continue
 			}
 			f, err := strconv.ParseFloat(value, 64)
@@ -60,33 +60,35 @@ func fitLinearModel(x, y []float64) (alpha, beta, mse float64) {
 }
 
 func main() {
-	// Load the dataset from CSV
-	data, err := loadCSV("C:/Users/haoyx/Desktop/MSDS431/boston.csv")
-	if err != nil {
-		log.Fatalf("error loading CSV: %v", err)
-	}
-
-	y := make([]float64, len(data))
-	for i, row := range data {
-		y[i] = row[len(row)-1]
-	}
-
-	// Fit a model for each feature individually
-	for i := 0; i < len(data[0])-1; i++ {
-		x := make([]float64, len(data))
-		for j, row := range data {
-			x[j] = row[i]
+	startTime := time.Now()
+	for i := 0; i < 100; i++ {
+		data, err := loadCSV("C:/Users/haoyx/Desktop/MSDS431/boston.csv")
+		if err != nil {
+			log.Fatalf("error loading CSV: %v", err)
 		}
 
-		alpha, beta, mse := fitLinearModel(x, y)
-		fmt.Printf("Feature %d: Beta: %f, MSE: %f\n", i, alpha, beta, mse)
+		y := make([]float64, len(data))
+		for i, row := range data {
+			y[i] = row[len(row)-1]
+		}
+
+		// Fit a model for each feature individually
+		for i := 0; i < len(data[0])-1; i++ {
+			x := make([]float64, len(data))
+			for j, row := range data {
+				x[j] = row[i]
+			}
+
+			alpha, beta, mse := fitLinearModel(x, y)
+			fmt.Printf("Feature %d: Beta: %f, MSE: %f\n", i, alpha, beta, mse)
+		}
+		for j := 0; j < 1000; j++ {
+			_ = j * j
+		}
 	}
-	var totalTime time.Duration
-	for i := 0; i < 100; i++ {
-		start := time.Now()
-		// ... (code to fit models without concurrency)
-		totalTime += time.Since(start)
-	}
-	avgTime := totalTime / 100
-	fmt.Printf("Average execution time (non-concurrent): %v\n", avgTime)
+	elapsedTime := time.Since(startTime)
+
+	fmt.Printf("Total execution time for 100 runs: %s\n", elapsedTime)
+	fmt.Printf("Average execution time per run: %s\n", elapsedTime/time.Duration(100))
 }
+
